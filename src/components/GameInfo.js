@@ -1,46 +1,46 @@
-import React from 'react';
-import {getStepName} from '../lib/common.js';
+import React, {useState} from 'react';
 
-class GameInfo extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state= {
-      isReversedList: false,
-    }
-  }
+function GameInfo({history, onClick, status}) {
 
-  reverseList() {
-    this.setState((state) => ({isReversedList: !state.isReversedList}))
-  }
-  
-  render() {
-    const {history, onClick, status} = this.props
-    // Заменить метод сортировки reverse() выполняет сортировку in-place, не создавая копии массива
-    // это ломает программу. Нельзя менять пропсы
-    // Сделать состояние reverse
-    const moves = history.map((item, index)=>{
-      const desc = 'Переход к ходу ' + index + ` : ${getStepName(item.currentCell)} `
-      return (
-        <li key={index} className="game-info__steps">
-          {/* onClick={onClick(index)} приводило к потере this === undefined Почему? */}
-          <button onClick={()=>onClick(index)}>{desc}</button>
-        </li>)
-      })
-    const movesResult = this.state.isReversedList ? moves.slice(1).reverse() : moves.slice(1)
-    
-    return (
-      <div className="game-info">
-        <div>{status}</div>
-        <div className="game-info__controlls">
-          <button onClick={()=>this.reverseList()}>В обратном порядке</button>
-          <button onClick={()=>onClick(0)}>К началу игры</button>
-        </div>
-        <ol reversed={this.state.isReversedList}>
-          {movesResult}
-        </ol>
-      </div>
-    )
-  }
+	const [isReversedList, setIsReversedList] = useState(false)
+
+	const moves = history.map((item, index)=>{
+		const desc = 'Переход к ходу ' + index + ` : ${getStepName(item.currentCell)} `
+		return (
+			<li key={index} className="game-info__steps">
+				<button onClick={()=>onClick(index)}>{desc}</button>
+			</li>)
+		})
+		
+	const movesResult = isReversedList ? moves.slice(1).reverse() : moves.slice(1)
+	
+	return (
+		<div className="game-info">
+			<div>{status}</div>
+			<div className="game-info__controlls">
+				<button onClick={()=>setIsReversedList((prev) => !prev)}>В обратном порядке</button>
+				<button onClick={()=>onClick(0)}>К началу игры</button>
+			</div>
+			<ol reversed={isReversedList}>
+				{movesResult}
+			</ol>
+		</div>
+	)
+}
+
+function getStepName(i) {
+	const cells = {
+		0: '1 x 1',
+		1: '1 x 2',
+		2: '1 x 3',
+		3: '2 x 1',
+		4: '2 x 2',
+		5: '2 x 3',
+		6: '3 x 1',
+		7: '3 x 2',
+		8: '3 x 3',
+	}
+	return cells[i]
 }
 
 export default GameInfo

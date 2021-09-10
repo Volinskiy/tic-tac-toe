@@ -9,7 +9,7 @@ const Square = ({value, b, currentCell, winnerCell, onClick}) => {
   return (
     <button
       className={className}
-      onClick={()=>onClick()}
+      onClick={onClick}
     >
       { value }{b}
     </button>
