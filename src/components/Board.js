@@ -1,46 +1,34 @@
 import React from 'react';
 import Square from './Square';
 
-class Board extends React.Component {
-  renderSquare(i) {
-    const {winnerCombination} = this.props
-    return (
-      <Square
-        value={this.props.squares[i]} 
-        onClick={() => this.props.onClick(i)}
-        currentCell={this.props.currentCell === i ? true : false }
-        key={i}
-        b={i}
-        winnerCell={winnerCombination.includes(i) ? true : false}
-      />
-    )
-  }
+function Board({squares, onClick, currentCell, winnerCombination}) {
+  let tableRange = [0,1,2]
   
-  getTable() {
-    let table = [0,1,2]
-    return (
-      <div>
-        {table.map((rowIndex) => {
-          return (
-            <div className="board-row" key={rowIndex}>
-              {table.map((columnIndex) => {
-                return this.renderSquare(rowIndex*3 + columnIndex)
-                })
-              }
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-
-  render() {
-    return (
-      <div>
-        {this.getTable()}
-      </div>
-    );
-  }
+  return (
+    <div>
+      {tableRange.map((rowIndex) => {
+        return (
+          <div className="board-row" key={rowIndex}>
+            {tableRange.map((columnIndex) => {
+              const i = rowIndex*3 + columnIndex
+              return (
+                <Square
+                  value={squares[i]} 
+                  onClick={() => onClick(i)}
+                  currentCell={currentCell === i ? true : false }
+                  key={i}
+                  b={i}
+                  winnerCell={winnerCombination.includes(i) ? true : false}
+                />
+              )
+              })
+            }
+          </div>
+        )
+      })}
+    </div>
+  )
 }
+
 
 export default Board

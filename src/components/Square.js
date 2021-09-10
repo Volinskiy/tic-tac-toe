@@ -1,17 +1,17 @@
 import React from 'react';
 
-const Square = (props) => {
+const Square = ({value, b, currentCell, winnerCell, onClick}) => {
   const className = `square
-                    ${props.currentCell ? 'square__current' : ''}
-                    ${props.winnerCell ? 'square__win-call' : ''}
+                    ${currentCell ? 'square__current' : ''}
+                    ${winnerCell ? 'square__win-call' : ''}
                     `
 
   return (
     <button
       className={className}
-      onClick={props.onClick}
+      onClick={()=>onClick()}
     >
-      { props.value }{props.b}
+      { value }{b}
     </button>
   );
 }
