@@ -3,26 +3,33 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 const Square = (props) => {
-  const className = `square ${props.currentCell ? 'square__current' : ''}`
+  const className = `square
+                    ${props.currentCell ? 'square__current' : ''}
+                    ${props.winnerCell ? 'square__win-call' : ''}
+                    `
 
   return (
     <button
       className={className}
       onClick={props.onClick}
     >
-      { props.value }
+      { props.value }{props.b}
     </button>
   );
 }
 
 class Board extends React.Component {
   renderSquare(i) {
+    const {winnerCombination} = this.props
+    // console.log(winnerCombination);
     return (
       <Square
         value={this.props.squares[i]} 
         onClick={() => this.props.onClick(i)}
         currentCell={this.props.currentCell === i ? true : false }
         key={i}
+        b={i}
+        winnerCell={winnerCombination.includes(i) ? true : false}
       />
     )
   }
@@ -72,7 +79,7 @@ class GameInfo extends React.Component {
     // это ломает программу. Нельзя менять пропсы
     // Сделать состояние reverse
     const moves = history.map((item, index)=>{
-      const desc = 'Переход к ходу ' + index + ` ${getCellNumber(item.currentCell)} `
+      const desc = 'Переход к ходу ' + index + ` : ${getStepName(item.currentCell)} `
       return (
         <li key={index} className="game-info__steps">
           {/* onClick={onClick(index)} приводило к потере this === undefined Почему? */}
@@ -107,6 +114,8 @@ class Game extends React.Component {
       }],
       currentStep: 0,
       xIsNext: true,
+      winnerCombination: [],
+      standoff: null,
     }
   }
 
@@ -114,8 +123,9 @@ class Game extends React.Component {
     const history = this.state.history.slice(0, this.state.currentStep + 1)
     const current = history[history.length - 1]
     const squares = current.squares.slice()
+    const winnerCombination = calculateWinner(squares)
 
-    if (squares[i] || this.calculateWinner(squares)) {
+    if (squares[i] || winnerCombination) {
       return
     }
 
@@ -128,47 +138,49 @@ class Game extends React.Component {
       }]),
       currentStep: history.length,
       xIsNext: !this.state.xIsNext,
-    });
+    },() => {
+      this.hasWinner()
+      this.isStandoff()
+    })
  }
 
-  calculateWinner(squares) {
-    const winCombinations = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ]
+ hasWinner() {
+  const history = this.state.history
+  const current = history[history.length - 1]
 
-    for (let i=0; i<winCombinations.length; i++) {
-      const [a, b, c] = winCombinations[i]
-      if (squares[a] && squares[a]===squares[b] && squares[a]===squares[c]) {
-        return squares[a]
-      }
-    }
-
-    return null
+  const winCombinations = calculateWinner(current.squares)
+  if (winCombinations) {
+    this.setState((state) => {
+      if (state.winnerCombination !== winCombinations) return {winnerCombination: winCombinations}
+    })
   }
+ }
+
+ isStandoff() {
+   if (this.state.winnerCombination.length === 0 && this.state.currentStep === 9) {
+     this.setState(() => ({standoff: true}))
+   }
+ }
 
   jumpTo(step) {
     this.setState({
       currentStep: step,
       xIsNext: (step % 2) === 0,
+      standoff: null,
+      winnerCombination: [],
     })
   }
 
   render() {
     const history = this.state.history
     const current = history[this.state.currentStep]
-    const winner = this.calculateWinner(current.squares)
+    const winner = calculateWinner(current.squares)
+
     let status
     if(winner) {
-      status = 'Выиграл ' + winner
+      status = `Выиграл ${this.state.xIsNext ? 'O' : 'X'}`
     } else {
-      status =`Next player: ${this.state.xIsNext ? 'X' : 'O'}`;
+      status = this.state.standoff ? 'Ничья' : `Next player: ${this.state.xIsNext ? 'X' : 'O'}`;
     }
 
     return (
@@ -178,6 +190,7 @@ class Game extends React.Component {
             onClick={(i)=>this.handleClick(i)}
             squares={current.squares}
             currentCell={current.currentCell}
+            winnerCombination={this.state.winnerCombination}
           />
         </div>
         <GameInfo
@@ -198,7 +211,7 @@ ReactDOM.render(
 );
 
 
-function getCellNumber(i) {
+function getStepName(i) {
   const cells = {
     0: '1 x 1',
     1: '1 x 2',
@@ -211,4 +224,26 @@ function getCellNumber(i) {
     8: '3 x 3',
   }
   return cells[i]
+}
+
+function calculateWinner(squares) {
+  const winCombinations = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ]
+
+  for (let i=0; i<winCombinations.length; i++) {
+    const [a, b, c] = winCombinations[i]
+    if (squares[a] && squares[a]===squares[b] && squares[a]===squares[c]) {
+      return winCombinations[i]
+    }
+  }
+
+  return null
 }
