@@ -5,104 +5,87 @@ import GameInfo from './components/GameInfo';
 import './index.css';
 
 function Game() {
-	// constructor(props) {
-	//   super(props)
-	//   this.state = {
-	//     history: [{
-	//       squares: Array(9).fill(null),
-	//       currentCell: null,
-	//     }],
-	//     currentStep: 0,
-	//     xIsNext: true,
-	//     winnerCombination: [],
-	//     standoff: null,
-	//   }
-	// }
-
 	const [history, setHistory] = useState([{
-																	squares: Array(9).fill(null),
-																	currentCell: null,
-																}])
+                                  squares: Array(9).fill(null),
+                                  currentCell: null,
+                                }])
 	const [currentStep, setCurrentStep] = useState(0)
 	const [xIsNext, setXIsNext] = useState(true)
 	const [winnerCombination, setWinnerCombination] = useState([])
-	const [standoff, setStandoff] = useState(null)
-
-	const current = history[currentStep]
+	const [standoff, setStandoff] = useState(false)
 
 	function handleClick(i) {
-		const stepHistoryForStep = history.slice(0, currentStep + 1)
-		const currentStepHistory = stepHistoryForStep[stepHistoryForStep.length - 1]
-		const squares = currentStepHistory.squares.slice()
+		const currentSquares = history[currentStep].squares.slice()
 
-		if (squares[i] || winnerCombination.length !== 0) {
+		if (currentSquares[i] || winnerCombination.length !== 0) {
 			return
 		}
 
-		squares[i] = xIsNext ? 'X' : 'O'
+		currentSquares[i] = xIsNext ? 'X' : 'O'
 		
 		setHistory((prev) => (
-			stepHistoryForStep.concat([{
-				squares: squares,
-				currentCell: i,
-			}]
-		)))
-		setCurrentStep(stepHistoryForStep.length)
-		setXIsNext((prev) => !prev)
-
+      prev.slice(0, currentStep + 1).concat([{
+        squares: currentSquares,
+        currentCell: i,
+      }]))
+    )
+		setCurrentStep((prev) => prev + 1)
 	}
 
-	useEffect(() => {
-		hasWinner()
-		isStandoff()
-	}, [history, currentStep, xIsNext])
-
- function hasWinner() {
-	const winCombinations = calculateWinner(current.squares)
-	if (winCombinations) {
-		if (winnerCombination !== winCombinations) setWinnerCombination(winCombinations)
-	}
- }
-
+  function hasWinner() {
+    const winCombinations = calculateWinner(current.squares)
+    setWinnerCombination(winCombinations)
+  }
+  
 	function isStandoff() {
 		if (winnerCombination.length === 0 && currentStep === 9) {
 			setStandoff(true)
-		}
+		} else {
+      setStandoff(false)
+    }
 	}
+
+  function whoNext() {
+		const isEvenStep = (currentStep % 2) === 0
+		setXIsNext(isEvenStep)
+  }
 
 	function jumpTo(step) {
-		const isEvenStep = (step % 2) === 0
-		setXIsNext(isEvenStep)
 		setCurrentStep(step)
-		setStandoff(null)
-		//TODO: учесть перемещение на последний шаг
-		setWinnerCombination([])
 	}
 
-		let status
-		if(winnerCombination) {
-			status = `Выиграл ${xIsNext ? 'O' : 'X'}`
-		} else {
-			status = standoff ? 'Ничья' : `Next player: ${xIsNext ? 'X' : 'O'}`;
-		}
+	useEffect(() => {
+    hasWinner()
+		isStandoff()
+    whoNext()
+	}, [history, currentStep])
 
-		return (
-			<div className="game">
-				<div className="game-board">
-					<Board 
-						onClick={(i)=>handleClick(i)}
-						squares={current.squares}
-						currentCell={current.currentCell}
-						winnerCombination={winnerCombination}
-					/>
-				</div>
-				<GameInfo
-					onClick={(step) => jumpTo(step)}
-					history={history}
-					status={status}
-				/>
-			</div>
-		);
+  const current = Object.assign({}, history[currentStep])
+  
+  let status
+  if(winnerCombination.length > 0) {
+    status = `Выиграл ${xIsNext ? 'O' : 'X'}`
+  } else {
+    status = standoff ? 'Ничья' : `Next player: ${xIsNext ? 'X' : 'O'}`;
+  }
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board 
+          onClick={(i)=>handleClick(i)}
+          squares={current.squares}
+          currentCell={current.currentCell}
+          winnerCombination={winnerCombination}
+        />
+      </div>
+      <GameInfo
+        onClick={(step) => jumpTo(step)}
+        history={history}
+        status={status}
+      />
+    </div>
+  );
 }
 
 
@@ -125,7 +108,7 @@ function calculateWinner(squares) {
 			}
 	}
 	
-	return null
+	return []
 	}
 // ========================================
 

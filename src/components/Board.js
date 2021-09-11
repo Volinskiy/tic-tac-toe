@@ -17,7 +17,6 @@ function Board({squares, onClick, currentCell, winnerCombination}) {
                   onClick={() => onClick(i)}
                   currentCell={currentCell === i ? true : false }
                   key={i}
-                  b={i}
                   winnerCell={winnerCombination.includes(i) ? true : false}
                 />
               )
