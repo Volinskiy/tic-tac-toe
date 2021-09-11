@@ -3,6 +3,8 @@ import React, {useState} from 'react';
 function GameInfo({history, onClick, status}) {
 
 	const [isReversedList, setIsReversedList] = useState(false)
+	
+	const movesListResult = getMovesList(isReversedList)
 
 	function getMovesList(isReversed) {
 		const list = history.map((item, index)=>{
@@ -11,11 +13,10 @@ function GameInfo({history, onClick, status}) {
 										<li key={index} className="game-info__steps">
 											<button onClick={()=>onClick(index)}>{desc}</button>
 										</li>)
-									})
-		return isReversed ? list.slice(1).reverse() : list.slice(1)
+									}).slice(1) // Отрезаем нулевой ход
+		return isReversed ? list.reverse() : list
 	}
 	
-	const movesListResult = getMovesList(isReversedList)
 	
 	function reverseStepsList() {
 		setIsReversedList((prev) => !prev)
