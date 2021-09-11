@@ -4,17 +4,22 @@ function GameInfo({history, onClick, status}) {
 
 	const [isReversedList, setIsReversedList] = useState(false)
 
-	const movesList = history.map((item, index)=>{
-		const desc = 'Переход к ходу ' + index + ` : ${getStepName(item.currentCell)} `
-		return (
-			<li key={index} className="game-info__steps">
-				<button onClick={()=>onClick(index)}>{desc}</button>
-			</li>)
-		})
+	function getMovesList(isReversed) {
+		console.log('getMovesList');
+		const list = history.map((item, index)=>{
+									const desc = 'Переход к ходу ' + index + ` : ${getStepName(item.currentCell)} `
+									return (
+										<li key={index} className="game-info__steps">
+											<button onClick={()=>onClick(index)}>{desc}</button>
+										</li>)
+									})
+		return isReversed ? list.slice(1).reverse() : list.slice(1)
+	}
 	
-	const movesListResult = isReversedList ? movesList.slice(1).reverse() : movesList.slice(1)
+	const movesListResult = getMovesList(isReversedList)
 	
 	function reverseStepsList() {
+		console.log('reverseStepsList');
 		setIsReversedList((prev) => !prev)
 	}
 	
