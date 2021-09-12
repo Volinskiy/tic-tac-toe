@@ -41,7 +41,6 @@ function Game() {
       const currentSquares = history[currentStep].squares.slice()
       const winCombinations = calculateWinner(currentSquares)
       console.log(winCombinations);
-      //TODO: Разобраться почему возникает песконечный цикл
       setWinnerCombination((prev) => prev !== winCombinations ? winCombinations : prev)
     }
     
@@ -61,7 +60,9 @@ function Game() {
     hasWinner()
 		isStandoff()
     whoNext()
-	}, [history, currentStep, winnerCombination])
+    // TODO: Разобраться почему возникает бесконечный цикл,
+    // при добавлении в зависимости winnerCombination
+	}, [history, currentStep])
 
   let status
   if(winnerCombination.length > 0) {
