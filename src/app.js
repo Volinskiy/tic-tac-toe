@@ -32,42 +32,45 @@ function Game() {
 		setCurrentStep((prev) => prev + 1)
 	}
 
-  function hasWinner() {
-    const winCombinations = calculateWinner(current.squares)
-    setWinnerCombination(winCombinations)
-  }
-  
-	function isStandoff() {
-		if (winnerCombination.length === 0 && currentStep === 9) {
-			setStandoff(true)
-		} else {
-      setStandoff(false)
-    }
-	}
-
-  function whoNext() {
-		const isEvenStep = (currentStep % 2) === 0
-		setXIsNext(isEvenStep)
-  }
-
 	function jumpTo(step) {
 		setCurrentStep(step)
 	}
 
 	useEffect(() => {
+    function hasWinner() {
+      const currentSquares = history[currentStep].squares.slice()
+      const winCombinations = calculateWinner(currentSquares)
+      console.log(winCombinations);
+      //TODO: Разобраться почему возникает песконечный цикл
+      setWinnerCombination((prev) => prev !== winCombinations ? winCombinations : prev)
+    }
+    
+    function isStandoff() {
+      if (winnerCombination.length === 0 && currentStep === 9) {
+        setStandoff(true)
+      } else {
+        setStandoff(false)
+      }
+    }
+  
+    function whoNext() {
+      const isEvenStep = (currentStep % 2) === 0
+      setXIsNext(isEvenStep)
+    }
+
     hasWinner()
 		isStandoff()
     whoNext()
-	}, [history, currentStep])
+	}, [history, currentStep, winnerCombination])
 
-  const current = Object.assign({}, history[currentStep])
-  
   let status
   if(winnerCombination.length > 0) {
     status = `Выиграл ${xIsNext ? 'O' : 'X'}`
   } else {
     status = standoff ? 'Ничья' : `Next player: ${xIsNext ? 'X' : 'O'}`;
   }
+
+  const current = Object.assign({}, history[currentStep])
 
   return (
     <div className="game">
